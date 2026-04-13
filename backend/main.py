@@ -14,7 +14,7 @@ app.add_middleware(
 
 # main websocket endpoint
 @app.websocket("/ws/audio")
-async def main_websocket(websocket):
+async def main_websocket(websocket: WebSocket):
     await websocket.accept()
     try:
         while True:
