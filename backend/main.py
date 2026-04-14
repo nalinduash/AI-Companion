@@ -1,6 +1,10 @@
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect
 from fastapi.middleware.cors import CORSMiddleware
 import uvicorn
+import os
+
+from services.orchestrator_service import OrchestratorService
+from utilities.audio_utilities import bytes_to_float32
 
 app = FastAPI(title="AI Companion Backend")
 
@@ -12,9 +16,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-import os
-import uuid
-import wave
+orchestrator_service = OrchestratorService()
 
 AUDIO_DIR = "audio_files"
 os.makedirs(AUDIO_DIR, exist_ok=True)
@@ -25,18 +27,13 @@ async def main_websocket(websocket: WebSocket):
     await websocket.accept()
     try:
         while True:
-            data = await websocket.receive_bytes()
-            
-            file_id = str(uuid.uuid4())
-            file_path = os.path.join(AUDIO_DIR, f"{file_id}.wav")
-            
-            with wave.open(file_path, "wb") as wf:
-                wf.setnchannels(1)
-                wf.setsampwidth(2)
-                wf.setframerate(16000)
-                wf.writeframes(data)
-                
-            print(f"✅ Saved audio: {file_path}")
+            data = await websocket.receive()
+            if "bytes" in data:
+                audio_data = bytes_to_float32(data["bytes"])
+                await orchestrator_service.orchestrate(audio_data)
+            else:
+                # TODO: handle json
+                pass
             
     except WebSocketDisconnect:
         print("🌐❌: WebSocket connection closed by client")
