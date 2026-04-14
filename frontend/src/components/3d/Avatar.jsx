@@ -1,4 +1,5 @@
 import { useVRM } from '../../hooks/3d/useVRM';
+import { useAnimation } from '../../hooks/3d/useAnimation';
 
 /**
  * Avatar component that manages the 3D character lifecycle.
@@ -7,4 +8,5 @@ import { useVRM } from '../../hooks/3d/useVRM';
  */
 export default function Avatar() {
     const vrm = useVRM();
+    useAnimation(vrm);
 }
