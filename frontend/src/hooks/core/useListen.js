@@ -1,6 +1,8 @@
 import { useMicVAD } from "@ricky0123/vad-react"
+import { useCoreStore } from "@/stores/useCoreStore"
 
 export function useListen() {
+    const { setIsListening } = useCoreStore();
     const vad = useMicVAD({
         getStream: async () => {
             return await navigator.mediaDevices.getUserMedia({      // Get mic access
@@ -22,7 +24,13 @@ export function useListen() {
     })
 
     return {
-        startListening: vad.start,
-        stopListening: vad.pause,
+        startListening: () => {
+            vad.start()
+            setIsListening(true)
+        },
+        stopListening: () => {
+            vad.pause()
+            setIsListening(false)
+        },
     }
 }

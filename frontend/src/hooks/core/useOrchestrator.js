@@ -1,5 +1,5 @@
 import { useConnection } from "./useConnection"
-import { useListen } from "../audio/useListen"
+import { useListen } from "./useListen"
 
 export function useOrchestrator() {
     const { connect } = useConnection()

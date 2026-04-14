@@ -1,8 +1,9 @@
-import { useState, useRef } from "react";
+import { useRef } from "react";
+import { useCoreStore } from "@/stores/useCoreStore";
 
 export function useConnection() {
     const wsRef = useRef(null);
-    const [isConnected, setIsConnected] = useState(false);
+    const { setIsConnected } = useCoreStore();
 
     const connect = () => {
         const ws = new WebSocket("ws://localhost:8000/ws/audio");
