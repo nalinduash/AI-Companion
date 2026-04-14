@@ -1,16 +1,17 @@
 import './App.css'
 import { Button } from "@/components/ui/button"
-import { useConnection } from "@/hooks/core/useConnection"
+import { useOrchestrator } from "@/hooks/core/useOrchestrator"
 
 function App() {
-  const { connect } = useConnection()
-  
+  const { start, stop } = useOrchestrator()
+
   return (
     <>
       <h1 className="text-3xl font-bold underline">
         Hello world!
       </h1>
-      <Button onClick={connect}>Connect</Button>
+      <Button onClick={start}>Start</Button>
+      <Button onClick={stop}>Stop</Button>
     </>
   )
 }
