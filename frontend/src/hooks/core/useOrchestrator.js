@@ -2,8 +2,8 @@ import { useConnection } from "./useConnection"
 import { useListen } from "./useListen"
 
 export function useOrchestrator() {
-    const { connect } = useConnection()
-    const { startListening, stopListening } = useListen()
+    const { connect, wsRef } = useConnection()
+    const { startListening, stopListening } = useListen(wsRef)
 
     const start = () => {
         connect()

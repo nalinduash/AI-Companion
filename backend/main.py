@@ -12,6 +12,13 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+import os
+import uuid
+import wave
+
+AUDIO_DIR = "audio_files"
+os.makedirs(AUDIO_DIR, exist_ok=True)
+
 # main websocket endpoint
 @app.websocket("/ws/audio")
 async def main_websocket(websocket: WebSocket):
@@ -19,7 +26,18 @@ async def main_websocket(websocket: WebSocket):
     try:
         while True:
             data = await websocket.receive_bytes()
-            print("Received audio data")
+            
+            file_id = str(uuid.uuid4())
+            file_path = os.path.join(AUDIO_DIR, f"{file_id}.wav")
+            
+            with wave.open(file_path, "wb") as wf:
+                wf.setnchannels(1)
+                wf.setsampwidth(2)
+                wf.setframerate(16000)
+                wf.writeframes(data)
+                
+            print(f"✅ Saved audio: {file_path}")
+            
     except WebSocketDisconnect:
         print("🌐❌: WebSocket connection closed by client")
     except Exception as e:
