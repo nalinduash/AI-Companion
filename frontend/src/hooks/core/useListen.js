@@ -4,6 +4,7 @@ import { useCoreStore } from "@/stores/useCoreStore"
 export function useListen() {
     const { setIsListening } = useCoreStore();
     const vad = useMicVAD({
+        startOnLoad: false,
         getStream: async () => {
             return await navigator.mediaDevices.getUserMedia({      // Get mic access
                 audio: {
