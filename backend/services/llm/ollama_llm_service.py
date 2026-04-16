@@ -6,7 +6,7 @@ class LLMService(LLMBase):
     def _initialize(self):
         self.client = ollama.AsyncClient()
     
-    async def generate(self, prompt: str):
+    async def _generate(self, prompt: str):
         response = await self.client.generate(
             model="gemma3:270m",
             prompt=prompt,
