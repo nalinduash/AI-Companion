@@ -23,6 +23,12 @@ export function useListen(wsRef) {
             const int16Buffer = float32ToInt16(audio);
             wsRef.current.send(int16Buffer.buffer);
         },
+
+        positiveSpeechThreshold: 0.2,
+        negativeSpeechThreshold: 0.15,
+        redemptionMs: 1400,
+        preSpeechPadMs: 400,
+        minSpeechMs: 100,
     })
 
     return {
