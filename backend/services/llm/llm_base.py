@@ -1,3 +1,4 @@
+from utilities.llm_utilities import clean_text
 from abc import ABC, abstractmethod
 from utilities.llm_utilities import extract_sentences
 
@@ -39,4 +40,7 @@ class LLMBase(ABC):
             Stream sentences from LLM response.
         '''
         async for sentence in extract_sentences(self._generate(prompt)):
-            yield sentence
+            cleaned_sentence = clean_text(sentence)
+            if not cleaned_sentence:
+                continue
+            yield cleaned_sentence

@@ -23,3 +23,7 @@ async def extract_sentences(response):
     final_sentence = buffer.strip()
     if final_sentence:
         yield final_sentence
+
+def clean_text(text: str) -> str:
+    """Remove emojis and special characters before TTS"""
+    return re.sub(r'[^\x00-\x7F\u00C0-\u017F\s]+', '', text).strip()
