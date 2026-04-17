@@ -23,4 +23,4 @@ class OrchestratorService:
             print(f"Sentence: {sentence}")
             audio = self.tts.synthesize(sentence)
             audio_bytes = float32_to_bytes(audio)
-            self.websocket.send_bytes(audio_bytes)
+            await self.websocket.send_bytes(audio_bytes)
