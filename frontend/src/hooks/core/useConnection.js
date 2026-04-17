@@ -7,6 +7,7 @@ export function useConnection() {
 
     const connect = () => {
         const ws = new WebSocket("ws://localhost:8000/ws/audio");
+        ws.binaryType = "arraybuffer";
         wsRef.current = ws;
         
         ws.onopen = () => {

@@ -7,3 +7,13 @@ export function float32ToInt16(float32Buffer) {
     }
     return int16Buffer;
 }
+
+// Converts Int16Array (16-bit PCM) audio data to Float32Array.
+export function int16ToFloat32(audioData) {
+    const int16Array = new Int16Array(audioData);
+    const float32Array = new Float32Array(int16Array.length);
+    for (let i = 0; i < int16Array.length; i++) {
+        float32Array[i] = int16Array[i] / 32768.0;
+    }
+    return float32Array;
+}

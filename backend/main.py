@@ -1,7 +1,6 @@
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect
 from fastapi.middleware.cors import CORSMiddleware
 import uvicorn
-import os
 
 from services.orchestrator_service import OrchestratorService
 from utilities.audio_utilities import bytes_to_float32
@@ -16,21 +15,16 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-orchestrator_service = OrchestratorService()
-
-AUDIO_DIR = "audio_files"
-os.makedirs(AUDIO_DIR, exist_ok=True)
-
 # main websocket endpoint
 @app.websocket("/ws/audio")
 async def main_websocket(websocket: WebSocket):
     await websocket.accept()
+    orchestrator_service = OrchestratorService(websocket)
     try:
         while True:
             data = await websocket.receive()
             if "bytes" in data:
-                audio_data = bytes_to_float32(data["bytes"])
-                await orchestrator_service.orchestrate(audio_data)
+                await orchestrator_service.orchestrate_audio(data)
             else:
                 # TODO: handle json
                 pass
