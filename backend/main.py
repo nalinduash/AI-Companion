@@ -1,3 +1,4 @@
+import asyncio
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect
 from fastapi.middleware.cors import CORSMiddleware
 import uvicorn
@@ -20,11 +21,18 @@ app.add_middleware(
 async def main_websocket(websocket: WebSocket):
     await websocket.accept()
     orchestrator_service = OrchestratorService(websocket)
+    current_task = None
+
     try:
         while True:
             data = await websocket.receive()
             if "bytes" in data:
-                await orchestrator_service.orchestrate_audio(data)
+                if current_task and not current_task.done():
+                    current_task.cancel()
+                    
+                current_task = asyncio.create_task(
+                    orchestrator_service.orchestrate_audio(data)
+                )
             else:
                 # TODO: handle json
                 pass

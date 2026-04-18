@@ -1,3 +1,4 @@
+import asyncio
 from utilities.audio_utilities import bytes_to_float32, float32_to_bytes
 from services.llm.llm_base import LLMBase
 from .model_provider_service import ModelProvider
@@ -16,11 +17,11 @@ class OrchestratorService:
         
     async def orchestrate_audio(self, data: dict):
         audio_data = bytes_to_float32(data["bytes"])
-        text = self.stt.transcribe(audio_data)
+        text = await asyncio.to_thread(self.stt.transcribe, audio_data)
         print(f"Transcribed: {text}")
 
         async for sentence in self.llm.stream_sentences(text):
             print(f"Sentence: {sentence}")
-            audio = self.tts.synthesize(sentence)
+            audio = await asyncio.to_thread(self.tts.synthesize, sentence)
             audio_bytes = float32_to_bytes(audio)
             await self.websocket.send_bytes(audio_bytes)
