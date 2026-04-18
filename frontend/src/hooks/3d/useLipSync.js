@@ -9,6 +9,7 @@ import { useRef } from 'react';
 export function useLipSync(vrm) {
     const audioAnalyser = useCoreStore(state => state.audioAnalyser);
     const dataArrayRef = useRef(null);
+    const smoothedVolumeRef = useRef(0);
 
     useFrame(() => {
         if (!vrm?.expressionManager || !audioAnalyser) return;
@@ -17,20 +18,24 @@ export function useLipSync(vrm) {
             dataArrayRef.current = new Uint8Array(audioAnalyser.frequencyBinCount);
         }
 
-        // Fill dataArray with the analyser's frequency data
         const dataArray = dataArrayRef.current;
-        audioAnalyser.getByteFrequencyData(dataArray);
+        // Use Time Domain data for accurate loudness (loudness vs pitch)
+        audioAnalyser.getByteTimeDomainData(dataArray);
 
-        // Calculate average volume from frequency data
-        let total = 0;
+        // Calculate RMS (Root Mean Square) volume
+        let sumSquares = 0;
         for (let i = 0; i < dataArray.length; i++) {
-            total += dataArray[i];
+            const amplitude = (dataArray[i] - 128) / 128;
+            sumSquares += Math.pow(amplitude, 2);
         }
-        const average = total / dataArray.length;
+        const rms = Math.sqrt(sumSquares / dataArray.length);
         
-        // Map average volume to 'aa' blend shape (range 0 to 1)
-        const volume = Math.min(1, average / 40); 
+        // Normalize and boost the signal for lip sync
+        const targetVolume = Math.min(1, Math.pow(rms * 12.0, 1.1));
         
-        vrm.expressionManager.setValue('aa', volume);
+        // Smooth the volume transition slightly to prevent jittering
+        smoothedVolumeRef.current += (targetVolume - smoothedVolumeRef.current) * 0.4;
+        
+        vrm.expressionManager.setValue('aa', smoothedVolumeRef.current);
     });
 }
