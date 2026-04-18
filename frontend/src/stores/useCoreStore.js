@@ -5,4 +5,7 @@ export const useCoreStore = create((set) => ({
     setIsConnected: (isConnected) => set({ isConnected }),
     isListening: false,
     setIsListening: (isListening) => set({ isListening }),
+    audioAnalyser: null,
+    setAudioAnalyser: (audioAnalyser) => set({ audioAnalyser }),
+    
 }))

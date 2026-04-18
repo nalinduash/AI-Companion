@@ -1,10 +1,13 @@
 import { useRef, useEffect } from "react";
 import { int16ToFloat32 } from "@/utils/audioUtils";
+import { useCoreStore } from "@/stores/useCoreStore";
 
 // Handles audio we receive from the backend
 export function useAudio() {
     const audioContextRef = useRef(null);
+    const analyserRef = useRef(null);
     const nextStartTimeRef = useRef(0);
+    const setAudioAnalyser = useCoreStore(state => state.setAudioAnalyser);
 
     useEffect(() => {
         return () => {
@@ -16,7 +19,15 @@ export function useAudio() {
 
     const initAudioContext = () => {
         if (!audioContextRef.current) {
-            audioContextRef.current = new window.AudioContext({ sampleRate: 24000 });
+            audioContextRef.current = new (window.AudioContext || window.webkitAudioContext)({ sampleRate: 24000 });
+            
+            // Create and configure analyser
+            const analyser = audioContextRef.current.createAnalyser();
+            analyser.fftSize = 256;
+            analyserRef.current = analyser;
+            analyser.connect(audioContextRef.current.destination);
+            setAudioAnalyser(analyser);
+
             nextStartTimeRef.current = audioContextRef.current.currentTime;
         }
         if (audioContextRef.current.state === "suspended") {
@@ -34,7 +45,7 @@ export function useAudio() {
 
         const source = audioContextRef.current.createBufferSource();
         source.buffer = audioBuffer;
-        source.connect(audioContextRef.current.destination);
+        source.connect(analyserRef.current);
 
         // Schedule when to play the next audio
         const currentTime = audioContextRef.current.currentTime;
