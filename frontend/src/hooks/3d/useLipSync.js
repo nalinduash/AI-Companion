@@ -12,7 +12,14 @@ export function useLipSync(vrm) {
     const smoothedVolumeRef = useRef(0);
 
     useFrame(() => {
-        if (!vrm?.expressionManager || !audioAnalyser) return;
+        if (!vrm?.expressionManager) return;
+
+        // Avoid character keep mouth open when interrupted
+        if (!audioAnalyser) {
+            vrm.expressionManager.setValue('aa', 0);
+            smoothedVolumeRef.current = 0;
+            return;
+        }
 
         if (!dataArrayRef.current) {
             dataArrayRef.current = new Uint8Array(audioAnalyser.frequencyBinCount);

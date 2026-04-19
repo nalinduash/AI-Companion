@@ -10,10 +10,12 @@ export function useAudio() {
     const isStoppedRef = useRef(false);             // To handle interruptions
     const setAudioAnalyser = useCoreStore(state => state.setAudioAnalyser);
 
+    // Cleanup codes
     useEffect(() => {
         return () => {
             if (audioContextRef.current) {
                 audioContextRef.current.close();
+                setAudioAnalyser(null);
             }
         };
     }, []);
@@ -61,6 +63,7 @@ export function useAudio() {
 
     const stopPlayback = () => {
         isStoppedRef.current = true;
+        setAudioAnalyser(null);
         if (!audioContextRef.current) return;
 
         audioContextRef.current.close();
