@@ -3,9 +3,17 @@ import { useListen } from "./useListen"
 import { useAudio } from "./useAudio"
 
 export function useOrchestrator() {
-    const { addToQueue, initAudioContext } = useAudio()
+    const { addToQueue, initAudioContext, stopPlayback, resumePlayback } = useAudio()
     const { connect, disconnect, wsRef } = useConnection()
-    const { startListening, stopListening } = useListen(wsRef)
+    
+    const handleInterrupt = () => {
+        stopPlayback()
+        wsRef.current?.send(JSON.stringify({ type: "interrupt" }))
+    }
+
+    // User start speaking --> handleInterrupt
+    // User stop speaking  --> resumePlayback
+    const { startListening, stopListening } = useListen(wsRef, handleInterrupt, resumePlayback)
 
     const start = () => {
         initAudioContext()

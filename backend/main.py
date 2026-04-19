@@ -1,4 +1,5 @@
 import asyncio
+import json
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect
 from fastapi.middleware.cors import CORSMiddleware
 import uvicorn
@@ -34,8 +35,10 @@ async def main_websocket(websocket: WebSocket):
                     orchestrator_service.orchestrate_audio(data)
                 )
             else:
-                # TODO: handle json
-                pass
+                message = json.loads(data.get("text", "{}"))
+                if message.get("type") == "interrupt":
+                    if current_task and not current_task.done():
+                        current_task.cancel()
             
     except WebSocketDisconnect:
         print("🌐❌: WebSocket connection closed by client")

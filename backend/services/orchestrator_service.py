@@ -16,12 +16,15 @@ class OrchestratorService:
         self.websocket = websocket
         
     async def orchestrate_audio(self, data: dict):
-        audio_data = bytes_to_float32(data["bytes"])
-        text = await asyncio.to_thread(self.stt.transcribe, audio_data)
-        print(f"Transcribed: {text}")
+        try:
+            audio_data = bytes_to_float32(data["bytes"])
+            text = await asyncio.to_thread(self.stt.transcribe, audio_data)
+            print(f"Transcribed: {text}")
 
-        async for sentence in self.llm.stream_sentences(text):
-            print(f"Sentence: {sentence}")
-            audio = await asyncio.to_thread(self.tts.synthesize, sentence)
-            audio_bytes = float32_to_bytes(audio)
-            await self.websocket.send_bytes(audio_bytes)
+            async for sentence in self.llm.stream_sentences(text):
+                print(f"Sentence: {sentence}")
+                audio = await asyncio.to_thread(self.tts.synthesize, sentence)
+                audio_bytes = float32_to_bytes(audio)
+                await self.websocket.send_bytes(audio_bytes)
+        except asyncio.CancelledError:
+            print("🛑: Orchestration interrupted")

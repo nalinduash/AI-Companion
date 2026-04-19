@@ -7,6 +7,7 @@ export function useAudio() {
     const audioContextRef = useRef(null);
     const analyserRef = useRef(null);
     const nextStartTimeRef = useRef(0);
+    const isStoppedRef = useRef(false);             // To handle interruptions
     const setAudioAnalyser = useCoreStore(state => state.setAudioAnalyser);
 
     useEffect(() => {
@@ -36,6 +37,7 @@ export function useAudio() {
     };
 
     const addToQueue = async (audioData) => {
+        if (isStoppedRef.current) return;
         initAudioContext();
 
         const audioArray = int16ToFloat32(audioData);
@@ -57,8 +59,24 @@ export function useAudio() {
         nextStartTimeRef.current += audioBuffer.duration;
     };
 
+    const stopPlayback = () => {
+        isStoppedRef.current = true;
+        if (!audioContextRef.current) return;
+
+        audioContextRef.current.close();
+        audioContextRef.current = null;
+        analyserRef.current = null;
+        nextStartTimeRef.current = 0;
+    };
+
+    const resumePlayback = () => {
+        isStoppedRef.current = false;
+    };
+
     return {
         addToQueue,
-        initAudioContext
+        initAudioContext,
+        stopPlayback,
+        resumePlayback
     };
 }
