@@ -27,7 +27,7 @@ class LLMBase(ABC):
         '''
         pass
 
-    async def _generate(self, prompt: str):
+    async def _generate(self, system_prompt: str, user_prompt: str):
         '''
             Generate a response to the given prompt.
             Make sure they stream the response and not in thinking mode.
@@ -35,11 +35,11 @@ class LLMBase(ABC):
         '''
         pass
 
-    async def stream_sentences(self, prompt: str):
+    async def stream_sentences(self, system_prompt: str, user_prompt: str):
         '''
             Stream sentences from LLM response.
         '''
-        async for sentence in extract_sentences(self._generate(prompt)):
+        async for sentence in extract_sentences(self._generate(system_prompt, user_prompt)):
             cleaned_sentence = clean_text(sentence)
             if not cleaned_sentence:
                 continue

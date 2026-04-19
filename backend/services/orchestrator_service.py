@@ -1,3 +1,4 @@
+from services.prompt_service import PromptService
 import asyncio
 from utilities.audio_utilities import bytes_to_float32, float32_to_bytes
 from services.llm.llm_base import LLMBase
@@ -10,6 +11,7 @@ import numpy as np
 class OrchestratorService:
     def __init__(self, websocket):
         self.model_provider = ModelProvider()
+        self.prompt_service = PromptService()
         self.stt: STTBase = self.model_provider.get_stt()
         self.llm: LLMBase = self.model_provider.get_llm()
         self.tts: TTSBase = self.model_provider.get_tts()
@@ -21,7 +23,8 @@ class OrchestratorService:
             text = await asyncio.to_thread(self.stt.transcribe, audio_data)
             print(f"Transcribed: {text}")
 
-            async for sentence in self.llm.stream_sentences(text):
+            system_prompt = self.prompt_service.get_system_prompt()
+            async for sentence in self.llm.stream_sentences(system_prompt, text):
                 print(f"Sentence: {sentence}")
                 audio = await asyncio.to_thread(self.tts.synthesize, sentence)
                 audio_bytes = float32_to_bytes(audio)
