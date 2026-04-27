@@ -1,5 +1,5 @@
 DEFAULT_SYSTEM_PROMPT = "Limit your responses to 1-2 sentences maximum. "
-CHARACTER_PROMPT = "You are my friend. Your name is Aria "
+CHARACTER_PROMPT = "You are my friend. Your name is Aria. "
 USER_DETAILS_PROMPT = "User's name is Nalindu"
 
 class PromptService:

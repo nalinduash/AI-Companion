@@ -20,7 +20,7 @@ export function useListen(wsRef, onSpeechStart, onSpeechEnd) {
         onnxWASMBasePath: "https://cdn.jsdelivr.net/npm/onnxruntime-web@1.26.0-dev.20260410-5e55544225/dist/",
         model: "v5",
 
-        onSpeechStart: () => {
+        onRealSpeechStart: () => {
             onSpeechStart();
         },
         onSpeechEnd: (audio) => {

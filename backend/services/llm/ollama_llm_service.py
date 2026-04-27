@@ -8,7 +8,7 @@ class LLMService(LLMBase):
     
     async def _generate(self, system_prompt: str, user_prompt: str):
         response = await self.client.generate(
-            model="qwen3.5:0.8b",
+            model="qwen3.5:2b",
             system=system_prompt,
             prompt=user_prompt,
             stream=True,
