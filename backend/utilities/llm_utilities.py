@@ -36,7 +36,7 @@ async def extract_sentences(response):
     """Extract clean, speakable sentences from streaming AI response."""
     buffer = ""
     async for chunk in response:
-        content = getattr(chunk, 'response', '')
+        content = chunk if isinstance(chunk, str) else getattr(chunk, 'response', '')
         if not content:
             continue
 

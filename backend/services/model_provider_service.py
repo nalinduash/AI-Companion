@@ -1,7 +1,7 @@
 from .llm.llm_base import LLMBase
 from .stt.parakeet_stt_service import STTService
 from .stt.stt_base import STTBase
-from .llm.ollama_llm_service import LLMService
+from .llm.llamaCPP_llm_service import LLMService
 from .tts.kokoro_tts_service import TTSService
 from .tts.tts_base import TTSBase
 
