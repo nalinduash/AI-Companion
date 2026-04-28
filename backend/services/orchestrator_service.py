@@ -9,6 +9,7 @@ from .stt.stt_base import STTBase
 from .tts.tts_base import TTSBase
 import numpy as np
 import os
+import time
 
 class OrchestratorService:
     def __init__(self, websocket):
@@ -25,21 +26,46 @@ class OrchestratorService:
         
     async def orchestrate_audio(self, data: dict):
         try:
+            start_time = time.time()
             audio_data = bytes_to_float32(data["bytes"])
             user_prompt = await asyncio.to_thread(self.stt.transcribe, audio_data)
+            transcription_end_time = time.time()
             print(f"Transcribed: {user_prompt}")
 
             memory = self.memory_service.get_memory()
             system_prompt = self.prompt_service.build_system_prompt(memory)
 
             full_response = ""
+            first_sentence_end_time = None
+            first_audio_chunk_end_time = None
+
             async for sentence in self.llm.stream_sentences(system_prompt, user_prompt):
+                if first_sentence_end_time is None:
+                    first_sentence_end_time = time.time()
+                
                 print(f"Sentence: {sentence}")
                 full_response += sentence + " "
                 audio = await asyncio.to_thread(self.tts.synthesize, sentence)
+                
+                if first_audio_chunk_end_time is None:
+                    first_audio_chunk_end_time = time.time()
+                
                 audio_bytes = float32_to_bytes(audio)
                 await self.websocket.send_bytes(audio_bytes)
             
             self.memory_service.add_to_memory(user_prompt, full_response.strip())
+
+            # Print timing info
+            stt_time = transcription_end_time - start_time
+            llm_time = (first_sentence_end_time - transcription_end_time) if first_sentence_end_time else 0
+            tts_time = (first_audio_chunk_end_time - first_sentence_end_time) if first_audio_chunk_end_time and first_sentence_end_time else 0
+            total_time = stt_time + llm_time + tts_time
+
+            print(f"\n⏱️ Timing Info:")
+            print(f"  - Transcription: {stt_time:.3f}s")
+            print(f"  - First Sentence (LLM): {llm_time:.3f}s")
+            print(f"  - First Audio Chunk (TTS): {tts_time:.3f}s")
+            print(f"  - Total Latency: {total_time:.3f}s\n")
+
         except asyncio.CancelledError:
             print("🛑: Orchestration interrupted")
