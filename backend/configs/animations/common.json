@@ -1,0 +1,50 @@
+[
+  {
+    "name": "Boxing",
+    "description": "Throwing punches",
+    "location": "/animations/common/boxing.vrma",
+    "loop": false
+  },
+  {
+    "name": "Crawling",
+    "description": "Crawling on the floor",
+    "location": "/animations/common/crawling.vrma",
+    "loop": true
+  },
+  {
+    "name": "Drunk Idle",
+    "description": "Swaying while standing",
+    "location": "/animations/common/drunk-idle.vrma",
+    "loop": true
+  },
+  {
+    "name": "Drunk Walk",
+    "description": "Walking unsteadily",
+    "location": "/animations/common/drunk-walk.vrma",
+    "loop": true
+  },
+  {
+    "name": "Idle",
+    "description": "Standard standing animation",
+    "location": "/animations/common/idle.vrma",
+    "loop": true
+  },
+  {
+    "name": "Kicking",
+    "description": "A quick kick",
+    "location": "/animations/common/kicking.vrma",
+    "loop": false
+  },
+  {
+    "name": "Pointing",
+    "description": "Pointing at something",
+    "location": "/animations/common/pointing.vrma",
+    "loop": false
+  },
+  {
+    "name": "Vibing",
+    "description": "Relaxed swaying to music",
+    "location": "/animations/common/vibing.vrma",
+    "loop": true
+  }
+]

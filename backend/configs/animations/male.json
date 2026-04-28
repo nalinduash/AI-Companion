@@ -1,0 +1,14 @@
+[
+  {
+    "name": "Greeting",
+    "description": "Formal wave",
+    "location": "/animations/male/greeting.vrma",
+    "loop": false
+  },
+  {
+    "name": "Walking",
+    "description": "Casual walk",
+    "location": "/animations/male/walking.vrma",
+    "loop": true
+  }
+]
