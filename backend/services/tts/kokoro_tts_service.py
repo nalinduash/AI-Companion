@@ -20,7 +20,7 @@ class TTSService(TTSBase):
         model_config = sherpa_onnx.OfflineTtsModelConfig(
             kokoro=kokoro,
             num_threads=4,
-            provider="cpu",
+            provider="cuda",
             debug=False,
         )
         config = sherpa_onnx.OfflineTtsConfig(model=model_config, max_num_sentences=1)
