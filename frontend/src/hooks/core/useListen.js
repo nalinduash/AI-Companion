@@ -29,8 +29,8 @@ export function useListen(wsRef, onSpeechStart, onSpeechEnd) {
             wsRef.current.send(int16Buffer.buffer);
         },
 
-        positiveSpeechThreshold: 0.2,
-        negativeSpeechThreshold: 0.15,
+        positiveSpeechThreshold: 0.5,   // adjest these accordingly to avoid assistent listening to it's own voice
+        negativeSpeechThreshold: 0.35,  // adjest these accordingly to avoid assistent listening to it's own voice
         redemptionMs: 1400,
         preSpeechPadMs: 400,
         minSpeechMs: 100,
