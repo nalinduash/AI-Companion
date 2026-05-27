@@ -1,5 +1,5 @@
 ## Demo
-<video src="https://res.cloudinary.com/dyxpei8wf/video/upload/w_800/v1779881085/Demo-2026-05-27_vgkwhk.mp4" controls="true" width="100%"></video>
+https://github.com/user-attachments/assets/f9674125-8f00-4fd7-928f-ceec68499adc
 
 
 ## 🚀 How to Run
