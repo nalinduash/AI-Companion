@@ -1,3 +1,7 @@
+## Demo
+<video src="https://res.cloudinary.com/dyxpei8wf/video/upload/w_800/v1779881085/Demo-2026-05-27_vgkwhk.mp4" controls="true" width="100%"></video>
+
+
 ## 🚀 How to Run
 
 1. **Install UV Package Manager**
@@ -35,6 +39,7 @@
 
 6. **Open it in web browser:**
    - [http://localhost:5173](http://localhost:5173)
+
 
 Note:
 
