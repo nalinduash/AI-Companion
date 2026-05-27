@@ -20,7 +20,7 @@ export function useListen(wsRef, onSpeechStart, onSpeechEnd) {
         onnxWASMBasePath: "https://cdn.jsdelivr.net/npm/onnxruntime-web@1.26.0-dev.20260410-5e55544225/dist/",
         model: "v5",
 
-        onRealSpeechStart: () => {
+        onSpeechRealStart: () => {
             onSpeechStart();
         },
         onSpeechEnd: (audio) => {
@@ -29,8 +29,8 @@ export function useListen(wsRef, onSpeechStart, onSpeechEnd) {
             wsRef.current.send(int16Buffer.buffer);
         },
 
-        positiveSpeechThreshold: 0.5,   // adjest these accordingly to avoid assistent listening to it's own voice
-        negativeSpeechThreshold: 0.35,  // adjest these accordingly to avoid assistent listening to it's own voice
+        positiveSpeechThreshold: 0.25,   // set to sensitive threshold now that native AEC is active
+        negativeSpeechThreshold: 0.20,
         redemptionMs: 1400,
         preSpeechPadMs: 400,
         minSpeechMs: 100,

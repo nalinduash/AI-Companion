@@ -41,3 +41,4 @@ Note:
 - This may take several minutes to run for the first time due to downloading the model.
 - This is tested only on linux(Nobara 43) yet.
 - You may need to change here-and-there if you are running this on a different OS.
+- I found that this works best with chrome browser. Firefox seems to pickup it's own voice and do a feedback loop.
