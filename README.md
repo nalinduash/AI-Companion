@@ -1,6 +1,8 @@
 ## Demo
+
 https://github.com/user-attachments/assets/f9674125-8f00-4fd7-928f-ceec68499adc
 
+## Notice: This is currently wrking only for Linux with CUDA supported cards(RTX family). For other operating systems and hardwares, you might need to adjust settings manually. We hope to make this cross-platform in the future.
 
 ## 🚀 How to Run
 
@@ -15,31 +17,16 @@ https://github.com/user-attachments/assets/f9674125-8f00-4fd7-928f-ceec68499adc
    - [Bonsai-8B Model](https://huggingface.co/prism-ml/Bonsai-8B-gguf/blob/main/Bonsai-8B-Q1_0.gguf)
 4. **Extract `llamacpp-prism` and move `Bonsai-8B-Q1_0.gguf` into it.**
 
-5. **Run Program:**
+5. **Create a folder called llm and move the content of the llama-cpp and Bonsai 8B model into it.**
 
-   **5.1. Go to `llama-cpp` folder and run LLama-CPP server on port 8081:**
+6. **Run Program:**
 
-   ```bash
-   ./llama-server -m ./Bonsai-8B-Q1_0.gguf -ngl 99 -c 2048 --port 8081 --host 0.0.0.0 --log-disable
+   ```python
+   python3 run.py
    ```
 
-   **5.2. Run Backend:**
-
-   ```bash
-   cd backend
-   uv run main.py
-   ```
-
-   **5.3. Run Frontend:**
-
-   ```bash
-   cd frontend
-   npm run dev
-   ```
-
-6. **Open it in web browser:**
+7. **Open it in web browser:**
    - [http://localhost:5173](http://localhost:5173)
-
 
 Note:
 

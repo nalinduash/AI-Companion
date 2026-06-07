@@ -5,10 +5,6 @@ import uvicorn
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect
 from fastapi.middleware.cors import CORSMiddleware
 from services.orchestrator_service import OrchestratorService
-from utilities.cuda_utilities import setup_cuda_paths
-
-if sys.platform == "linux":
-    setup_cuda_paths()
 
 app = FastAPI(title="AI Companion Backend")
 
