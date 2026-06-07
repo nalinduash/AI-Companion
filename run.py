@@ -3,6 +3,9 @@ import sys
 import signal
 import os
 
+# Force Python subprocesses to output logs of the services
+os.environ["PYTHONUNBUFFERED"] = "1"
+
 # Define the services to run with their command and working directory
 SERVICES = {
     "Frontend": {
@@ -89,7 +92,7 @@ async def run_service(name, config):
             stdout=asyncio.subprocess.PIPE,
             stderr=asyncio.subprocess.STDOUT,
             cwd=cwd,
-            env=os.environ  # Subprocess inherits the injected LD_LIBRARY_PATH
+            env=os.environ  # Subprocess inherits the injected LD_LIBRARY_PATH and PYTHONUNBUFFERED
         )
     except Exception as e:
         print(f"[System] Failed to start {name}: {e}")
