@@ -6,7 +6,7 @@ import sherpa_onnx
 # singleton pattern
 class STTService(STTBase):
     def _initialize(self):
-        model_dir = os.path.join(os.path.dirname(__file__), "..", "..", "models", "stt", "sherpa-onnx-nemo-parakeet_tdt_ctc_110m-en-36000-int8")
+        model_dir = os.path.join(os.path.dirname(__file__), "..", "..", "models", "stt")
         model_dir = os.path.abspath(model_dir)
         
         self.recognizer = sherpa_onnx.OfflineRecognizer.from_nemo_ctc(

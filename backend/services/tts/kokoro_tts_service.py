@@ -6,7 +6,7 @@ import sherpa_onnx
 # singleton pattern
 class TTSService(TTSBase):
     def _initialize(self):
-        model_dir = os.path.join(os.path.dirname(__file__), "..", "..", "models", "tts", "kokoro-en-v0_19")
+        model_dir = os.path.join(os.path.dirname(__file__), "..", "..", "models", "tts")
         model_dir = os.path.abspath(model_dir)
 
         kokoro = sherpa_onnx.OfflineTtsKokoroModelConfig(
