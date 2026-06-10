@@ -369,6 +369,27 @@ def main():
         print(f"Error: backend folder not found at {backend_dir}")
         sys.exit(1)
     
+    # Select and copy the appropriate pyproject TOML template
+    use_cuda = sys_info['use_cuda']
+    if use_cuda:
+        source_toml = os.path.join(backend_dir, 'pyproject-cuda.toml')
+        print("CUDA support detected. Preparing pyproject-cuda.toml...")
+    else:
+        source_toml = os.path.join(backend_dir, 'pyproject-cpu.toml')
+        print("No CUDA support detected (CPU/Vulkan/macOS). Preparing pyproject-cpu.toml...")
+
+    dest_toml = os.path.join(backend_dir, 'pyproject.toml')
+    if not os.path.exists(source_toml):
+        print(f"Error: Source TOML file not found at {source_toml}")
+        sys.exit(1)
+
+    try:
+        shutil.copy2(source_toml, dest_toml)
+        print(f"Successfully copied {os.path.basename(source_toml)} to {os.path.basename(dest_toml)}")
+    except Exception as e:
+        print(f"Error preparing pyproject.toml: {e}")
+        sys.exit(1)
+
     try:
         print(f"Running '{uv_path} sync' in backend...")
         subprocess.run([uv_path, 'sync'], cwd=backend_dir, check=True)
