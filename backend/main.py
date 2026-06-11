@@ -40,9 +40,9 @@ async def main_websocket(websocket: WebSocket):
                         current_task.cancel()
             
     except WebSocketDisconnect:
-        print("🌐❌: WebSocket connection closed by client")
+        print("[WS] WebSocket connection closed by client")
     except Exception as e:
-        print(f"🌐❌: WebSocket error: {e}")
+        print(f"[WS] WebSocket error: {e}")
 
 # start
 if __name__ == "__main__":

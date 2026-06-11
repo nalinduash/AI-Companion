@@ -57,11 +57,11 @@ class OrchestratorService:
             tts_time = (first_audio_chunk_end_time - first_sentence_end_time) if first_audio_chunk_end_time and first_sentence_end_time else 0
             total_time = stt_time + llm_time + tts_time
 
-            print(f"\n⏱️ Timing Info:")
+            print(f"\n[Timing] Timing Info:")
             print(f"  - Transcription: {stt_time:.3f}s")
             print(f"  - First Sentence (LLM): {llm_time:.3f}s")
             print(f"  - First Audio Chunk (TTS): {tts_time:.3f}s")
             print(f"  - Total Latency: {total_time:.3f}s\n")
 
         except asyncio.CancelledError:
-            print("🛑: Orchestration interrupted")
+            print("[Orchestrator] Orchestration interrupted")

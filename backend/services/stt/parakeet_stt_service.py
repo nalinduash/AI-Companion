@@ -15,7 +15,7 @@ class STTService(STTBase):
             num_threads=1,
             provider="cpu"
         )
-        print("📝✅: Parakeet STT model initialized successfully.")
+        print("[STT] Parakeet STT model initialized successfully.")
 
     def transcribe(self, audio_array: np.ndarray) -> str:
         """Process an isolated segment and return transcribed text."""

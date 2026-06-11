@@ -25,7 +25,7 @@ class TTSService(TTSBase):
         )
         config = sherpa_onnx.OfflineTtsConfig(model=model_config, max_num_sentences=1)
         self.tts = sherpa_onnx.OfflineTts(config)
-        print("📝✅: Kokoro TTS model initialized successfully.")
+        print("[TTS] Kokoro TTS model initialized successfully.")
 
     def synthesize(self, text: str) -> np.ndarray:
         """Process text and return audio data."""
