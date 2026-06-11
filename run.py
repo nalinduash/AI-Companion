@@ -142,36 +142,67 @@ def detect_system():
     }
 
 def setup_cuda_paths():
-    """Locates CUDA/cuDNN library directories in backend/.venv and injects them into LD_LIBRARY_PATH."""
+    """Locates CUDA/cuDNN library directories in backend/.venv and injects them into environment variables."""
     script_dir = os.path.dirname(os.path.abspath(__file__))
-    venv_lib = os.path.join(script_dir, "backend", ".venv", "lib")
+    os_name = platform.system().lower()
+    
+    venv_dir = os.path.join(script_dir, "backend", ".venv")
 
-    if not os.path.exists(venv_lib):
-        print(f"[System] Warning: {venv_lib} not found. Skipping CUDA path injection.")
-        return
+    site_packages = None
+    if os_name == 'windows':
+        site_packages = os.path.join(venv_dir, "Lib", "site-packages")
+    else:
+        # On Linux/macOS, site-packages is typically in .venv/lib/python3.X/site-packages
+        venv_lib = os.path.join(venv_dir, "lib")
+        if os.path.exists(venv_lib):
+            py_dirs = [d for d in os.listdir(venv_lib) if d.startswith("python")]
+            if py_dirs:
+                site_packages = os.path.join(venv_lib, py_dirs[0], "site-packages")
 
-    # Handle different Python directory names dynamically (e.g., python3.10, python3.12)
-    py_dirs = [d for d in os.listdir(venv_lib) if d.startswith("python")]
-    if not py_dirs:
-        return
-
-    site_packages = os.path.join(venv_lib, py_dirs[0], "site-packages")
     nvidia_base = os.path.join(site_packages, "nvidia")
-
     if not os.path.exists(nvidia_base):
-        print(f"[System] Warning: {nvidia_base} not found in site-packages.")
+        print(f"[System] Warning: {nvidia_base} not found. Skipping CUDA path injection.")
         return
 
-    # Dynamically find any folder under 'nvidia' that has a 'lib' directory
+    # Collect DLL/shared library directories
     nvidia_paths = []
     for folder in os.listdir(nvidia_base):
-        lib_path = os.path.join(nvidia_base, folder, "lib")
+        folder_path = os.path.join(nvidia_base, folder)
+        if not os.path.isdir(folder_path):
+            continue
+        
+        # On Windows, DLLs are under 'bin' and/or 'lib'. On Linux/macOS, shared libraries are under 'lib'.
+        sub_dir = "bin" if os_name == "windows" else "lib"
+        lib_path = os.path.join(folder_path, sub_dir)
         if os.path.exists(lib_path):
             nvidia_paths.append(lib_path)
 
-    if nvidia_paths:
+    if not nvidia_paths:
+        return
+
+    # Inject paths into the environment
+    if os_name == 'windows':
+        existing_path = os.environ.get("PATH", "")
+        paths_to_add = [p for p in nvidia_paths if p not in existing_path]
+        if paths_to_add:
+            new_path = os.pathsep.join(paths_to_add)
+            if existing_path:
+                os.environ["PATH"] = f"{new_path}{os.pathsep}{existing_path}"
+            else:
+                os.environ["PATH"] = new_path
+            
+            # Also register them for the current python process
+            for p in paths_to_add:
+                try:
+                    os.add_dll_directory(p)
+                except Exception:
+                    pass
+            
+            print("[System] Injected CUDA paths into PATH:")
+            for path in paths_to_add:
+                print(f"  -> {path}")
+    else:
         existing_ld_path = os.environ.get("LD_LIBRARY_PATH", "")
-        # Add only new paths that aren't already declared
         paths_to_add = [p for p in nvidia_paths if p not in existing_ld_path]
         if paths_to_add:
             new_ld_path = ":".join(paths_to_add)

@@ -17,15 +17,27 @@ class TTSService(TTSBase):
             dict_dir=os.path.join(model_dir, "espeak-ng-data"),
             lang="en-us",
         )
-        model_config = sherpa_onnx.OfflineTtsModelConfig(
-            kokoro=kokoro,
-            num_threads=4,
-            provider="cuda",
-            debug=False,
-        )
-        config = sherpa_onnx.OfflineTtsConfig(model=model_config, max_num_sentences=1)
-        self.tts = sherpa_onnx.OfflineTts(config)
-        print("[TTS] Kokoro TTS model initialized successfully.")
+        try:
+            model_config = sherpa_onnx.OfflineTtsModelConfig(
+                kokoro=kokoro,
+                num_threads=4,
+                provider="cuda",
+                debug=False,
+            )
+            config = sherpa_onnx.OfflineTtsConfig(model=model_config, max_num_sentences=1)
+            self.tts = sherpa_onnx.OfflineTts(config)
+            print("[TTS] Kokoro TTS model initialized successfully using CUDA.")
+        except Exception as e:
+            print(f"[TTS] Warning: Failed to initialize Kokoro TTS with CUDA: {e}. Falling back to CPU.")
+            model_config = sherpa_onnx.OfflineTtsModelConfig(
+                kokoro=kokoro,
+                num_threads=4,
+                provider="cpu",
+                debug=False,
+            )
+            config = sherpa_onnx.OfflineTtsConfig(model=model_config, max_num_sentences=1)
+            self.tts = sherpa_onnx.OfflineTts(config)
+            print("[TTS] Kokoro TTS model initialized successfully using CPU.")
 
     def synthesize(self, text: str) -> np.ndarray:
         """Process text and return audio data."""
