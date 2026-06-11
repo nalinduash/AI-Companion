@@ -238,7 +238,8 @@ def install_uv():
             cmd = "curl -LsSf https://astral.sh/uv/install.sh | sh"
             subprocess.run(cmd, shell=True, check=True)
         elif os_name == 'windows':
-            cmd = 'powershell -ExecutionPolicy ByPass -c "irm https://astral.sh/uv/install.ps1 | iex"'
+            # Official install command
+            cmd = 'powershell -ExecutionPolicy ByPass -c "irm https://astral.sh/uv/install.ps1 | iex"' 
             subprocess.run(cmd, shell=True, check=True)
         else:
             print(f"Cannot auto-install UV on unsupported OS: {os_name}")

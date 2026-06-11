@@ -2,7 +2,9 @@
 
 https://github.com/user-attachments/assets/f9674125-8f00-4fd7-928f-ceec68499adc
 
-## Notice: This is currently wrking only for Linux with CUDA supported cards(RTX family). For other operating systems and hardwares, you might need to adjust settings manually. We hope to make this cross-platform in the future.
+## Notice: This is working for Linux/Windows and MacOS. This support both CUDA cards(RTX family) and Non-CUDA cards(via vulkan).
+
+## Notice (Only for Windows users): You may have to disable `Smart App Control` as it blocks UV package manager.
 
 ## 🚀 How to Run
 
@@ -16,7 +18,7 @@ https://github.com/user-attachments/assets/f9674125-8f00-4fd7-928f-ceec68499adc
 
 3. **Install dependencies**
 
-   ```bash
+   ```python
    python install.py
    ```
 
@@ -32,5 +34,5 @@ https://github.com/user-attachments/assets/f9674125-8f00-4fd7-928f-ceec68499adc
 Note:
 
 - This may take several minutes to run for the first time due to downloading the model.
-- This is tested only on linux(Fedora 44) yet.
-- I found that this works best with chrome browser. Firefox seems to pickup it's own voice and do a feedback loop.
+- This is tested only on `Linux(Fedora 44)` and `Windows 11` yet.
+- I found that this works best with `Google Chrome browser`. Firefox seems to pickup it's own voice and do a feedback loop.
