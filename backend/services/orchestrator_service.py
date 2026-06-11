@@ -3,7 +3,6 @@ from .memory.short_term_memory_service import ShortTermMemoryService
 import asyncio
 from utilities.audio_utilities import bytes_to_float32, float32_to_bytes
 from services.llm.llm_base import LLMBase
-from .model_downloader_service import ModelDownloaderService
 from .model_provider_service import ModelProvider
 from .stt.stt_base import STTBase
 from .tts.tts_base import TTSBase
@@ -12,10 +11,7 @@ import os
 import time
 
 class OrchestratorService:
-    def __init__(self, websocket):
-        self.model_downloader = ModelDownloaderService()
-        self.model_downloader.ensure_models()
-        
+    def __init__(self, websocket):        
         self.model_provider = ModelProvider()
         self.prompt_service = PromptService()
         self.memory_service = ShortTermMemoryService()
