@@ -1,3 +1,5 @@
 __pycache__/
 backend/models
 llm/
+backend/pyproject.toml
+.install_metadata.json

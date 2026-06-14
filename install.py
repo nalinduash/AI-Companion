@@ -9,6 +9,7 @@ import zipfile
 import tarfile
 import json
 import re
+import argparse
 
 LLAMA_CPP_RELEASE_VERSION = "b9581"
 LLAMA_CPP_URLS = {
@@ -33,10 +34,108 @@ LLAMA_CPP_URLS = {
     }
 }
 
+METADATA_FILE = ".install_metadata.json"
 
-LLM_MODEL_URL = "https://huggingface.co/prism-ml/Bonsai-8B-gguf/resolve/main/Bonsai-8B-Q1_0.gguf"
-KOKORO_TTS_URL = "https://github.com/k2-fsa/sherpa-onnx/releases/download/tts-models/kokoro-en-v0_19.tar.bz2"
-PARAKEET_STT_URL = "https://github.com/k2-fsa/sherpa-onnx/releases/download/asr-models/sherpa-onnx-nemo-parakeet_tdt_ctc_110m-en-36000-int8.tar.bz2"
+MODELS_REGISTRY = [
+    {
+        "id": "bonsai-llm",
+        "name": "Bonsai-8B LLM Model",
+        "url": "https://huggingface.co/prism-ml/Bonsai-8B-gguf/resolve/main/Bonsai-8B-Q1_0.gguf",
+        "dest_dir": "llm",
+        "exist_file": "Bonsai-8B-Q1_0.gguf",
+        "extract": False
+    },
+    {
+        "id": "kokoro-tts",
+        "name": "Kokoro TTS Model",
+        "url": "https://github.com/k2-fsa/sherpa-onnx/releases/download/tts-models/kokoro-en-v0_19.tar.bz2",
+        "dest_dir": os.path.join("backend", "models", "tts"),
+        "exist_file": "model.onnx",
+        "extract": True
+    },
+    {
+        "id": "parakeet-stt",
+        "name": "Parakeet STT Model",
+        "url": "https://github.com/k2-fsa/sherpa-onnx/releases/download/asr-models/sherpa-onnx-nemo-parakeet_tdt_ctc_110m-en-36000-int8.tar.bz2",
+        "dest_dir": os.path.join("backend", "models", "stt"),
+        "exist_file": "model.int8.onnx",
+        "extract": True
+    }
+]
+
+def load_metadata(script_dir):
+    metadata_path = os.path.join(script_dir, METADATA_FILE)
+    if os.path.exists(metadata_path):
+        try:
+            with open(metadata_path, "r", encoding="utf-8") as f:
+                return json.load(f)
+        except Exception as e:
+            print(f"Warning: Failed to load metadata file: {e}")
+    return {"models": {}}
+
+def save_metadata(script_dir, metadata):
+    metadata_path = os.path.join(script_dir, METADATA_FILE)
+    try:
+        with open(metadata_path, "w", encoding="utf-8") as f:
+            json.dump(metadata, f, indent=2)
+    except Exception as e:
+        print(f"Warning: Failed to save metadata file: {e}")
+
+def update_codebase(script_dir):
+    git_dir = os.path.join(script_dir, ".git")
+    if not os.path.exists(git_dir):
+        return
+
+    print("\n--- Checking for Codebase Updates (git pull) ---")
+    git_bin = shutil.which("git")
+    if not git_bin:
+        print("git command not found. Skipping auto-update of code.")
+        return
+
+    try:
+        # Check current HEAD commit hash
+        old_commit = subprocess.run(
+            [git_bin, "rev-parse", "HEAD"],
+            cwd=script_dir,
+            capture_output=True,
+            text=True,
+            check=True
+        ).stdout.strip()
+
+        # Run git pull
+        print("Running git pull...")
+        result = subprocess.run([git_bin, "pull"], cwd=script_dir, capture_output=True, text=True)
+        if result.returncode != 0:
+            print(f"Warning: git pull failed:\n{result.stderr}")
+            return
+
+        new_commit = subprocess.run(
+            [git_bin, "rev-parse", "HEAD"],
+            cwd=script_dir,
+            capture_output=True,
+            text=True,
+            check=True
+        ).stdout.strip()
+
+        if old_commit != new_commit:
+            print("Codebase updated successfully.")
+            # Check if this script (install.py) itself was modified
+            diff_res = subprocess.run(
+                [git_bin, "diff", "--name-only", old_commit, new_commit],
+                cwd=script_dir,
+                capture_output=True,
+                text=True,
+                check=True
+            )
+            changed_files = diff_res.stdout.splitlines()
+            if "install.py" in changed_files:
+                print("install.py was updated. Restarting script to apply new installation logic...")
+                os.execv(sys.executable, [sys.executable] + sys.argv)
+        else:
+            print("Codebase is already up to date.")
+    except Exception as e:
+        print(f"Warning: An error occurred during git pull: {e}")
+
 
 # Detect OS, Architecture, GPU info, CUDA/Vulkan info
 def detect_system():
@@ -344,15 +443,26 @@ def extract_and_flatten(archive_path, dest_dir):
 def main():
     script_dir = os.path.dirname(os.path.abspath(__file__))
 
-    # 1. Detect OS and Graphics card
-    print("--- 1) Detecting OS and Graphics Card ---")
+    # 1. Parse command line arguments
+    parser = argparse.ArgumentParser(description="Install and update AI Companion dependencies and models.")
+    parser.add_argument("-f", "--force", action="store_true", help="Force re-download of all models and binaries.")
+    args = parser.parse_args()
+
+    # 2. Check for codebase updates
+    update_codebase(script_dir)
+
+    # Load metadata tracker
+    metadata = load_metadata(script_dir)
+
+    # 3. Detect OS and Graphics card
+    print("\n--- 1) Detecting OS and Graphics Card ---")
     sys_info = detect_system()
     print(f"Operating System: {sys_info['os'].capitalize()}")
     print(f"Architecture:     {sys_info['arch']}")
     print(f"Graphics Card:    {sys_info['gpu']}")
     print(f"Hardware Mode:    {'CUDA (GPU acceleration enabled)' if sys_info['use_cuda'] else 'Vulkan (GPU acceleration enabled)' if sys_info['use_vulkan'] else 'CPU only / Metal'}")
 
-    # 2. Install UV Package manager
+    # 4. Install UV Package manager
     print("\n--- 2) Installing/Verifying UV Package Manager ---")
     if not install_uv():
         print("Failed to setup UV package manager.")
@@ -363,14 +473,13 @@ def main():
         print("Error: uv executable not found after install.")
         sys.exit(1)
 
-    # 3. Backend Dependencies uv sync
+    # 5. Sync backend dependencies
     print("\n--- 3) Syncing Backend Dependencies ---")
     backend_dir = os.path.join(script_dir, 'backend')
     if not os.path.exists(backend_dir):
         print(f"Error: backend folder not found at {backend_dir}")
         sys.exit(1)
     
-    # Select and copy the appropriate pyproject TOML template
     use_cuda = sys_info['use_cuda']
     if use_cuda:
         source_toml = os.path.join(backend_dir, 'pyproject-cuda.toml')
@@ -398,82 +507,79 @@ def main():
         print(f"Error syncing backend: {e}")
         sys.exit(1)
 
-    # 4. Setup LLM
-    print("\n--- 4) Setting up LLM ---")
-    llm_dir = os.path.join(script_dir, 'llm')
-    os.makedirs(llm_dir, exist_ok=True)
-
-    # 4.1 & 4.2: Download Llama-cpp and extract to llm/
-    download_url = get_download_url(sys_info)
-    archive_ext = ".zip" if download_url.endswith(".zip") else ".tar.gz"
-    archive_path = os.path.join(llm_dir, f"llama-cpp-bin{archive_ext}")
-
-    exe_name = "llama-server.exe" if sys_info['os'] == 'windows' else "llama-server"
-    if os.path.exists(os.path.join(llm_dir, exe_name)):
-        print("llama-cpp executable already exists in llm/. Skipping download.")
-    else:
-        try:
-            download_file(download_url, archive_path)
-            extract_and_flatten(archive_path, llm_dir)
-            if os.path.exists(archive_path):
-                os.remove(archive_path)
-            print("llama-cpp binaries set up successfully.")
-        except Exception as e:
-            print(f"Failed to set up llama-cpp: {e}")
-            sys.exit(1)
-
-    # 4.3: Download Bonsai-8B model
-    model_path = os.path.join(llm_dir, "Bonsai-8B-Q1_0.gguf")
-
-    if os.path.exists(model_path):
-        print("Bonsai-8B model already exists in llm/. Skipping download.")
-    else:
-        try:
-            download_file(LLM_MODEL_URL, model_path)
-            print("Bonsai-8B model downloaded successfully.")
-        except Exception as e:
-            print(f"Failed to download model: {e}")
-            sys.exit(1)
-
-    # 4.4: Setup TTS (Kokoro)
-    print("\n--- 4.4) Setting up Kokoro TTS ---")
-    tts_dir = os.path.join(script_dir, 'backend', 'models', 'tts')
-    os.makedirs(tts_dir, exist_ok=True)
+    # 6. Setting up Models and Binaries
+    print("\n--- 4) Setting up Models and Binaries ---")
     
-    if os.path.exists(os.path.join(tts_dir, "model.onnx")):
-        print("Kokoro TTS model already exists in backend/models/tts/. Skipping download.")
-    else:
-        archive_path = os.path.join(tts_dir, "kokoro-en-v0_19.tar.bz2")
-        try:
-            download_file(KOKORO_TTS_URL, archive_path)
-            extract_and_flatten(archive_path, tts_dir)
-            if os.path.exists(archive_path):
-                os.remove(archive_path)
-            print("Kokoro TTS model set up successfully.")
-        except Exception as e:
-            print(f"Failed to set up Kokoro TTS: {e}")
-            sys.exit(1)
+    # Resolve system-specific llama-cpp URL and executable
+    llama_url = get_download_url(sys_info)
+    llama_exe = "llama-server.exe" if sys_info['os'] == 'windows' else "llama-server"
 
-    # 4.5: Setup STT (Parakeet)
-    print("\n--- 4.5) Setting up Parakeet STT ---")
-    stt_dir = os.path.join(script_dir, 'backend', 'models', 'stt')
-    os.makedirs(stt_dir, exist_ok=True)
+    # Unified installation checklist
+    installation_list = [
+        {
+            "id": "llama-cpp",
+            "name": f"Llama-cpp Binaries (version {LLAMA_CPP_RELEASE_VERSION})",
+            "url": llama_url,
+            "dest_dir": "llm",
+            "exist_file": llama_exe,
+            "extract": True
+        }
+    ] + MODELS_REGISTRY
 
-    if os.path.exists(os.path.join(stt_dir, "model.int8.onnx")):
-        print("Parakeet STT model already exists in backend/models/stt/. Skipping download.")
-    else:
-        archive_path = os.path.join(stt_dir, "sherpa-onnx-nemo-parakeet_tdt_ctc_110m-en-36000-int8.tar.bz2")
-        try:
-            download_file(PARAKEET_STT_URL, archive_path)
-            extract_and_flatten(archive_path, stt_dir)
-            if os.path.exists(archive_path):
-                os.remove(archive_path)
-            print("Parakeet STT model set up successfully.")
-        except Exception as e:
-            print(f"Failed to set up Parakeet STT: {e}")
-            sys.exit(1)
+    # Process each item in the registry
+    for item in installation_list:
+        abs_dest_dir = os.path.join(script_dir, item['dest_dir'])
+        abs_exist_file = os.path.join(abs_dest_dir, item['exist_file'])
 
-    # 5. Frontend Dependencies npm install
+        item_id = item['id']
+        current_url = item['url']
+        installed_url = metadata.get("models", {}).get(item_id, "")
+
+        # Determine download trigger conditions:
+        # 1. File doesn't exist
+        # 2. File exists, but metadata URL is present AND it differs (an update was requested via code URL change)
+        # 3. User requested a force update
+        file_exists = os.path.exists(abs_exist_file)
+        should_download = not file_exists or (installed_url and installed_url != current_url) or args.force
+
+        if should_download:
+            print(f"Downloading/updating {item['name']}...")
+            os.makedirs(abs_dest_dir, exist_ok=True)
+
+            if item['extract']:
+                # Deduce extension based on URL
+                if current_url.endswith(".zip"):
+                    archive_ext = ".zip"
+                elif current_url.endswith(".tar.gz") or current_url.endswith(".tgz"):
+                    archive_ext = ".tar.gz"
+                elif current_url.endswith(".tar.bz2") or current_url.endswith(".tbz2") or current_url.endswith(".bz2"):
+                    archive_ext = ".tar.bz2"
+                else:
+                    archive_ext = ".archive"
+                download_dest = os.path.join(abs_dest_dir, f"temp_{item_id}{archive_ext}")
+            else:
+                download_dest = abs_exist_file
+
+            try:
+                download_file(current_url, download_dest)
+                if item['extract']:
+                    extract_and_flatten(download_dest, abs_dest_dir)
+                    if os.path.exists(download_dest):
+                        os.remove(download_dest)
+                
+                # Save status in metadata
+                if "models" not in metadata:
+                    metadata["models"] = {}
+                metadata["models"][item_id] = current_url
+                save_metadata(script_dir, metadata)
+                print(f"Successfully set up {item['name']}.")
+            except Exception as e:
+                print(f"Error setting up {item['name']}: {e}")
+                sys.exit(1)
+        else:
+            print(f"-> {item['name']} is already up to date.")
+
+    # 7. Frontend Dependencies npm install
     print("\n--- 5) Installing Frontend Dependencies ---")
     frontend_dir = os.path.join(script_dir, 'frontend')
     if not os.path.exists(frontend_dir):
@@ -502,3 +608,15 @@ if __name__ == '__main__':
     except KeyboardInterrupt:
         print("\nInstallation aborted by user.")
         sys.exit(1)
+
+# Model Update Check Mechanism:
+# 1. All installable assets (models, binaries) are defined in MODELS_REGISTRY or dynamically resolved at runtime.
+# 2. The script maintains '.install_metadata.json' mapping each asset ID to its downloaded source URL.
+# 3. For each asset, the script checks:
+#    - If its target 'exist_file' is missing locally.
+#    - If the URL in the metadata file differs from the current registry URL (indicating a model update/change).
+#    - If the user explicitly passed the '--force' flag to force a re-download.
+# 4. If any condition is met, the asset is downloaded, extracted (if required), and the metadata file is updated.
+# 5. This allows automatic, transparent updates when code URLs change, without re-downloading unchanged files.
+
+
