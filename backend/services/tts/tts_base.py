@@ -27,7 +27,7 @@ class TTSBase(ABC):
         pass
 
     @abstractmethod
-    def synthesize(self, text: str) -> np.ndarray:
+    def synthesize(self, text: str, voice_id: int = 0) -> np.ndarray:
         '''
             Synthesize the text into audio data.
             Need to implement in child class.

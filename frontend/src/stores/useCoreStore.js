@@ -7,5 +7,8 @@ export const useCoreStore = create((set) => ({
     setIsListening: (isListening) => set({ isListening }),
     audioAnalyser: null,
     setAudioAnalyser: (audioAnalyser) => set({ audioAnalyser }),
-    
+    activeCharacter: "aria",
+    setActiveCharacter: (activeCharacter) => set({ activeCharacter }),
+    characters: {},
+    setCharacters: (characters) => set({ characters }),
 }))

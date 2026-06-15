@@ -2,11 +2,15 @@ import { useEffect, useRef, useState } from 'react';
 import { useThree } from '@react-three/fiber';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader';
 import { VRMLoaderPlugin, VRMUtils } from '@pixiv/three-vrm';
+import { useCoreStore } from '@/stores/useCoreStore';
 
 // Hook to load and manage the VRM avatar in the 3D scene
 export function useVRM() {
     const { scene } = useThree();
-    const vrmPath = '/characters/Aria.vrm';
+    const activeCharacter = useCoreStore((state) => state.activeCharacter);
+    const characters = useCoreStore((state) => state.characters);
+    const charData = characters[activeCharacter];
+    const vrmPath = charData ? `/characters/${charData.vrm}` : `/characters/Aria.vrm`;
     const [currentVRM, setCurrentVRM] = useState(null);
     const vrmRef = useRef(null);
 

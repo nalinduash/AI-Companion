@@ -9,6 +9,7 @@ from .tts.tts_base import TTSBase
 import numpy as np
 import os
 import time
+import json
 
 class OrchestratorService:
     def __init__(self, websocket):        
@@ -20,7 +21,11 @@ class OrchestratorService:
         self.tts: TTSBase = self.model_provider.get_tts()
         self.websocket = websocket
         
-    async def orchestrate_audio(self, data: dict):
+        config_path = os.path.join(os.path.dirname(__file__), "..", "configs", "characters.json")
+        with open(config_path, "r") as f:
+            self.characters_config = json.load(f)
+        
+    async def orchestrate_audio(self, data: dict, active_character):
         try:
             start_time = time.time()
             audio_data = bytes_to_float32(data["bytes"])
@@ -28,8 +33,11 @@ class OrchestratorService:
             transcription_end_time = time.time()
             print(f"Transcribed: {user_prompt}")
 
+            char_config = self.characters_config.get(active_character, {})
+            voice_id = char_config.get("voice_id", 0)
+
             memory = self.memory_service.get_memory()
-            system_prompt = self.prompt_service.build_system_prompt(memory)
+            system_prompt = self.prompt_service.build_system_prompt(memory, active_character)
 
             full_response = ""
             first_sentence_end_time = None
@@ -41,7 +49,7 @@ class OrchestratorService:
                 
                 print(f"Sentence: {sentence}")
                 full_response += sentence + " "
-                audio = await asyncio.to_thread(self.tts.synthesize, sentence)
+                audio = await asyncio.to_thread(self.tts.synthesize, sentence, voice_id)
                 
                 if first_audio_chunk_end_time is None:
                     first_audio_chunk_end_time = time.time()
