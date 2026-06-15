@@ -36,5 +36,6 @@ export function useOrchestrator() {
     return {
         start,
         stop,
+        handleInterrupt,
     }
 }

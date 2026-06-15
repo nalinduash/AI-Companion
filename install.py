@@ -11,7 +11,7 @@ import json
 import re
 import argparse
 
-LLAMA_CPP_RELEASE_VERSION = "b9581"
+LLAMA_CPP_RELEASE_VERSION = "b9642"
 LLAMA_CPP_URLS = {
     'darwin': {
         'arm64': f'https://github.com/ggml-org/llama.cpp/releases/download/{LLAMA_CPP_RELEASE_VERSION}/llama-{LLAMA_CPP_RELEASE_VERSION}-bin-macos-arm64.tar.gz',
@@ -48,7 +48,7 @@ MODELS_REGISTRY = [
     {
         "id": "kokoro-tts",
         "name": "Kokoro TTS Model",
-        "url": "https://github.com/k2-fsa/sherpa-onnx/releases/download/tts-models/kokoro-en-v0_19.tar.bz2",
+        "url": "https://github.com/k2-fsa/sherpa-onnx/releases/download/tts-models/kokoro-multi-lang-v1_0.tar.bz2",
         "dest_dir": os.path.join("backend", "models", "tts"),
         "exist_file": "model.onnx",
         "extract": True
@@ -394,6 +394,23 @@ def download_file(url, dest_path):
         raise
 
 def extract_and_flatten(archive_path, dest_dir):
+    # Clean destination folder except the archive file before extracting
+    abs_archive = os.path.abspath(archive_path)
+    abs_dest = os.path.abspath(dest_dir)
+    if os.path.exists(abs_dest):
+        for item in os.listdir(abs_dest):
+            item_path = os.path.join(abs_dest, item)
+            abs_item = os.path.abspath(item_path)
+            if abs_item == abs_archive:
+                continue
+            try:
+                if os.path.isdir(abs_item):
+                    shutil.rmtree(abs_item)
+                else:
+                    os.remove(abs_item)
+            except Exception as e:
+                print(f"Warning: Could not remove old item {item}: {e}")
+
     tmp_dir = os.path.join(dest_dir, "tmp_extract")
     os.makedirs(tmp_dir, exist_ok=True)
 

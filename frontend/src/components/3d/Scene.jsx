@@ -10,8 +10,9 @@ export default function Scene() {
                 camera={{ position: [0, 1.45, 1.2], fov: 35 }}
                 gl={{ antialias: true, alpha: true }}
             >
-                <ambientLight intensity={0.8} />
-                <directionalLight position={[1, 2, 3]} intensity={1.5} castShadow />
+                <ambientLight intensity={0.5} />
+                <directionalLight position={[1.5, 2.0, 1.2]} intensity={0.8} castShadow />
+                <directionalLight position={[-1.5, 1.5, 1.0]} intensity={0.6} />
                 
                 <OrbitControls 
                     target={[0, 1.45, 0]} 

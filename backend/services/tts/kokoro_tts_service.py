@@ -39,7 +39,7 @@ class TTSService(TTSBase):
             self.tts = sherpa_onnx.OfflineTts(config)
             print("[TTS] Kokoro TTS model initialized successfully using CPU.")
 
-    def synthesize(self, text: str) -> np.ndarray:
+    def synthesize(self, text: str, voice_id: int = 0) -> np.ndarray:
         """Process text and return audio data."""
-        result = self.tts.generate(text)
+        result = self.tts.generate(text, sid=voice_id)
         return np.array(result.samples)
