@@ -6,7 +6,7 @@ import { Card, CardContent, CardTitle } from './card';
 import { Button } from './button';
 
 function BottomBar() {
-    const { start, stop } = useOrchestrator()
+    const { start, stop, handleInterrupt } = useOrchestrator()
     const { isConnected, characters, setCharacters, activeCharacter, setActiveCharacter } = useCoreStore()
 
     useEffect(() => {
@@ -19,6 +19,7 @@ function BottomBar() {
     }, [setCharacters, setActiveCharacter])
 
     const selectCharacter = async (character) => {
+        handleInterrupt();
         try {
         const res = await fetch("http://localhost:8000/api/characters/active", {
             method: "POST",
