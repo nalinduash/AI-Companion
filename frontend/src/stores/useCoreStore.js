@@ -11,4 +11,6 @@ export const useCoreStore = create((set) => ({
     setActiveCharacter: (activeCharacter) => set({ activeCharacter }),
     characters: {},
     setCharacters: (characters) => set({ characters }),
+    userData: {},
+    setUserData: (userData) => set({ userData }),
 }))

@@ -1,8 +1,8 @@
 import json
 import os
+from services.database_service import get_user_data
 
 DEFAULT_SYSTEM_PROMPT = "Limit your responses to 1-2 sentences maximum. "
-USER_DETAILS_PROMPT = "User's name is Nalindu. "
 
 class PromptService:
     def __init__(self):
@@ -13,7 +13,17 @@ class PromptService:
     def build_system_prompt(self, memory: str, active_character: str):
         char_config = self.characters_config.get(active_character, {})
         personality = char_config.get("personality", "")
-        system_prompt = DEFAULT_SYSTEM_PROMPT + USER_DETAILS_PROMPT + personality
+        
+        user_data = get_user_data()
+        name = user_data.get("name", "Nalindu")
+        gender = user_data.get("gender", "")
+        
+        user_details = f"User's name is {name}. "
+        if gender:
+            user_details += f"User's gender is {gender}. "
+            
+        system_prompt = DEFAULT_SYSTEM_PROMPT + user_details + personality
+        
         return f"""
         {system_prompt}
 

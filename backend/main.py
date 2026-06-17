@@ -6,6 +6,7 @@ import uvicorn
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
 from services.orchestrator_service import OrchestratorService
+from services.database_service import get_user_data, save_user_data
 
 app = FastAPI(title="AI Companion Backend")
 
@@ -24,14 +25,14 @@ with open(CHAR_CONFIG_PATH, "r") as f:
 active_character = "aria"
 
 @app.get("/api/characters")
-async def get_characters():
+async def get_characters_endpoint():
     return {
         "characters": CHARACTERS,
         "active_character": active_character
     }
 
 @app.post("/api/characters/active")
-async def switch_character(request: Request):
+async def switch_character_endpoint(request: Request):
     global active_character
     body = await request.body()
     character = body.decode("utf-8").strip()
@@ -39,6 +40,17 @@ async def switch_character(request: Request):
         active_character = character
         return {"status": "success", "active_character": active_character}
     raise HTTPException(status_code=404, detail="Character not found")
+
+@app.get("/api/user-data")
+async def get_user_data_endpoint():
+    return get_user_data()
+
+@app.post("/api/user-data")
+async def save_user_data_endpoint(request: Request):
+    body = await request.json()
+    save_user_data(body)
+    return {"status": "success"}
+
 
 # main websocket endpoint
 @app.websocket("/ws/audio")
