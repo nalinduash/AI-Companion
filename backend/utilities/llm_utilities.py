@@ -9,16 +9,6 @@ MARKDOWN_PATTERNS = [
     (r'#+\s+', ''),             # # headings → remove
 ]
 
-# Words that end with a period but don't end a sentence
-ABBREVIATIONS = {'e.g.', 'i.e.', 'vs.', 'etc.', 'dr.', 'mr.', 'mrs.', 'ms.', 'prof.', 'sr.', 'jr.'}
-
-# Sentence boundaries: punctuation followed by whitespace, OR colon/closing-paren followed by newline
-SENTENCE_BOUNDARY = re.compile(
-    r'([.!?])\s+'        # standard: punctuation + space(s)
-    r'|([.!?:)])\n',     # at line end: punctuation/colon/closing-paren + newline
-)
-
-
 def strip_markdown(text: str) -> str:
     """Remove markdown formatting to get plain text."""
     for pattern, replacement in MARKDOWN_PATTERNS:
@@ -26,11 +16,22 @@ def strip_markdown(text: str) -> str:
     return text
 
 
+
+# Words that end with a period but don't end a sentence
+ABBREVIATIONS = {'e.g.', 'i.e.', 'vs.', 'etc.', 'dr.', 'mr.', 'mrs.', 'ms.', 'prof.', 'sr.', 'jr.'}
+
 def is_ends_with_abbreviation(text: str) -> bool:
     """Check if text ends with an abbreviation like 'e.g.' or 'Dr.'"""
     text_lower = text.rstrip().lower()
     return any(text_lower.endswith(abbr) for abbr in ABBREVIATIONS)
 
+
+
+# Sentence boundaries: punctuation followed by whitespace, OR colon/closing-paren followed by newline
+SENTENCE_BOUNDARY = re.compile(
+    r'([.!?])\s+'        # standard: punctuation + space(s)
+    r'|([.!?:)])\n',     # at line end: punctuation/colon/closing-paren + newline
+)
 
 async def extract_sentences(response):
     """Extract clean, speakable sentences from streaming AI response."""
@@ -70,3 +71,19 @@ async def extract_sentences(response):
 def clean_text(text: str) -> str:
     """Remove emojis and special characters before TTS"""
     return re.sub(r'[^\x00-\x7F\u00C0-\u017F\s]+', '', text).strip()
+
+
+
+EMOTION_PATTERN = re.compile(r'^\[(neutral|happy|relaxed|sad|angry|surprised)\]\s*', re.IGNORECASE)
+
+def parse_emotion_tag(text: str, default_emotion: str = "neutral") -> tuple[str, str]:
+    """
+    Parses the emotion tag (e.g. [joy]) from the start of the text.
+    Returns a tuple of (cleaned_text, emotion_name).
+    """
+    match = EMOTION_PATTERN.match(text)
+    if match:
+        emotion = match.group(1)
+        cleaned_text = text[match.end():]
+        return cleaned_text, emotion
+    return text, default_emotion

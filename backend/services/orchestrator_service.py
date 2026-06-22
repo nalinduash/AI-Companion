@@ -2,6 +2,7 @@ from services.prompt_service import PromptService
 from .memory.short_term_memory_service import ShortTermMemoryService
 import asyncio
 from utilities.audio_utilities import bytes_to_float32, float32_to_bytes
+from utilities.llm_utilities import parse_emotion_tag
 from services.llm.llm_base import LLMBase
 from .model_provider_service import ModelProvider
 from .stt.stt_base import STTBase
@@ -10,6 +11,7 @@ import numpy as np
 import os
 import time
 import json
+import base64
 
 class OrchestratorService:
     def __init__(self, websocket):        
@@ -42,20 +44,27 @@ class OrchestratorService:
             full_response = ""
             first_sentence_end_time = None
             first_audio_chunk_end_time = None
+            current_emotion = "neutral"
 
-            async for sentence in self.llm.stream_sentences(system_prompt, user_prompt):
+            async for raw_sentence in self.llm.stream_sentences(system_prompt, user_prompt):
                 if first_sentence_end_time is None:
                     first_sentence_end_time = time.time()
                 
-                print(f"Sentence: {sentence}")
-                full_response += sentence + " "
+                sentence, current_emotion = parse_emotion_tag(raw_sentence, current_emotion)
+                print(f"Emotion: {current_emotion} | Sentence: {sentence} ")
+                full_response += raw_sentence + " "
                 audio = await asyncio.to_thread(self.tts.synthesize, sentence, voice_id)
                 
                 if first_audio_chunk_end_time is None:
                     first_audio_chunk_end_time = time.time()
                 
                 audio_bytes = float32_to_bytes(audio)
-                await self.websocket.send_bytes(audio_bytes)
+                audio_b64 = base64.b64encode(audio_bytes).decode("utf-8")
+                
+                await self.websocket.send_text(json.dumps({
+                    "audio": audio_b64,
+                    "emotion": current_emotion
+                }))
             
             self.memory_service.add_to_memory(user_prompt, full_response.strip())
 
