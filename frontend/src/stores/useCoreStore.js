@@ -13,4 +13,6 @@ export const useCoreStore = create((set) => ({
     setCharacters: (characters) => set({ characters }),
     userData: {},
     setUserData: (userData) => set({ userData }),
+    currentEmotion: "neutral",
+    setCurrentEmotion: (currentEmotion) => set({ currentEmotion }),
 }))

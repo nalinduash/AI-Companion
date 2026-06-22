@@ -7,8 +7,11 @@ export function useAudio() {
     const audioContextRef = useRef(null);
     const analyserRef = useRef(null);
     const nextStartTimeRef = useRef(0);
-    const isStoppedRef = useRef(false);             // To handle interruptions
+    const isStoppedRef = useRef(false);
     const setAudioAnalyser = useCoreStore(state => state.setAudioAnalyser);
+    const setCurrentEmotion = useCoreStore(state => state.setCurrentEmotion);
+    const latestEndTimeRef = useRef(0);
+    const timeoutsRef = useRef([]);
 
     // Cleanup codes
     useEffect(() => {
@@ -17,6 +20,7 @@ export function useAudio() {
                 audioContextRef.current.close();
                 setAudioAnalyser(null);
             }
+            timeoutsRef.current.forEach(clearTimeout);
         };
     }, []);
 
@@ -38,12 +42,11 @@ export function useAudio() {
         }
     };
 
-    const addToQueue = async (audioData) => {
+    const addToQueue = async (audioData, emotion = "neutral") => {
         if (isStoppedRef.current) return;
         initAudioContext();
 
         const audioArray = int16ToFloat32(audioData);
-
         const audioBuffer = audioContextRef.current.createBuffer(1, audioArray.length, 24000);
         audioBuffer.getChannelData(0).set(audioArray);
 
@@ -53,19 +56,39 @@ export function useAudio() {
 
         // Schedule when to play the next audio
         const currentTime = audioContextRef.current.currentTime;
-        if (nextStartTimeRef.current < currentTime) {
-            nextStartTimeRef.current = currentTime;
-        }
+        if (nextStartTimeRef.current < currentTime) nextStartTimeRef.current = currentTime;
 
-        source.start(nextStartTimeRef.current);
-        nextStartTimeRef.current += audioBuffer.duration;
+        const startTime = nextStartTimeRef.current;
+        const duration = audioBuffer.duration;
+        const endTime = startTime + duration;
+
+        latestEndTimeRef.current = Math.max(latestEndTimeRef.current, endTime);
+        source.start(startTime);
+        nextStartTimeRef.current += duration;
+
+        const startT = setTimeout(() => {
+            if (!isStoppedRef.current) setCurrentEmotion(emotion);
+        }, Math.max(0, (startTime - currentTime) * 1000));
+
+        const endT = setTimeout(() => {
+            if (!isStoppedRef.current && audioContextRef.current) {
+                if (audioContextRef.current.currentTime >= latestEndTimeRef.current - 0.05){
+                    setCurrentEmotion("neutral");
+                }
+            }
+        }, Math.max(0, (endTime - currentTime) * 1000));
+
+        timeoutsRef.current.push(startT, endT);
     };
 
     const stopPlayback = () => {
         isStoppedRef.current = true;
         setAudioAnalyser(null);
+        setCurrentEmotion("neutral");
+        timeoutsRef.current.forEach(clearTimeout);
+        timeoutsRef.current = [];
+        latestEndTimeRef.current = 0;
         if (!audioContextRef.current) return;
-
         audioContextRef.current.close();
         audioContextRef.current = null;
         analyserRef.current = null;
@@ -74,12 +97,9 @@ export function useAudio() {
 
     const resumePlayback = () => {
         isStoppedRef.current = false;
+        timeoutsRef.current = [];
+        latestEndTimeRef.current = 0;
     };
 
-    return {
-        addToQueue,
-        initAudioContext,
-        stopPlayback,
-        resumePlayback
-    };
+    return { addToQueue, initAudioContext, stopPlayback, resumePlayback };
 }
