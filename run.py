@@ -290,7 +290,7 @@ async def main():
             "cwd": "backend"
         },
         "LLM": {
-            "command": f"{llama_server_name} -m Bonsai-8B-Q1_0.gguf -ngl {ngl_value} -c 2048 --port 8081 --host 0.0.0.0 --log-disable",
+            "command": f"{llama_server_name} -m gemma-4-E2B-it-Q4_K_M.gguf -ngl {ngl_value} -c 2048 --port 8081 --host 0.0.0.0 --log-disable",
             "cwd": "llm"
         }
     }

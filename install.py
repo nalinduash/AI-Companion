@@ -38,11 +38,11 @@ METADATA_FILE = ".install_metadata.json"
 
 MODELS_REGISTRY = [
     {
-        "id": "bonsai-llm",
-        "name": "Bonsai-8B LLM Model",
-        "url": "https://huggingface.co/prism-ml/Bonsai-8B-gguf/resolve/main/Bonsai-8B-Q1_0.gguf",
+        "id": "gemma-4-llm",
+        "name": "Gemma-4-E2B-it LLM Model",
+        "url": "https://huggingface.co/unsloth/gemma-4-E2B-it-GGUF/resolve/main/gemma-4-E2B-it-Q4_K_M.gguf",
         "dest_dir": "llm",
-        "exist_file": "Bonsai-8B-Q1_0.gguf",
+        "exist_file": "gemma-4-E2B-it-Q4_K_M.gguf",
         "extract": False
     },
     {
