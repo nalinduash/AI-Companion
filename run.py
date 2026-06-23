@@ -286,7 +286,7 @@ async def main():
             "cwd": "frontend"
         },
         "Backend": {
-            "command": "uv run main.py",
+            "command": "uv run --offline main.py",
             "cwd": "backend"
         },
         "LLM": {

@@ -5,3 +5,4 @@ llm/
 backend/pyproject.toml
 .install_metadata.json
 backend/configs/sqlite.db
+bugs to solve
