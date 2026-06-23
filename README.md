@@ -4,6 +4,8 @@ https://github.com/user-attachments/assets/f9674125-8f00-4fd7-928f-ceec68499adc
 
 ## Notice: This is working for Linux/Windows and MacOS. This support both CUDA cards(RTX family) and Non-CUDA cards(via vulkan).
 
+## Notice: Even 4GB graphics card can get response time less than 1 second.
+
 ## Notice (Only for Windows users): You may have to disable `Smart App Control` as it blocks UV package manager.
 
 ## 🚀 How to Run
