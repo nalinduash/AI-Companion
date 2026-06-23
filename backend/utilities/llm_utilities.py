@@ -74,16 +74,20 @@ def clean_text(text: str) -> str:
 
 
 
-EMOTION_PATTERN = re.compile(r'^\[(neutral|happy|relaxed|sad|angry|surprised)\]\s*', re.IGNORECASE)
+VALID_EMOTIONS = {"neutral", "happy", "relaxed", "sad", "angry", "surprised"}
+EMOTION_TAG_PATTERN = re.compile(r'^\[([^\]]+)\]\s*')
 
 def parse_emotion_tag(text: str, default_emotion: str = "neutral") -> tuple[str, str]:
     """
     Parses the emotion tag (e.g. [joy]) from the start of the text.
     Returns a tuple of (cleaned_text, emotion_name).
     """
-    match = EMOTION_PATTERN.match(text)
+    match = EMOTION_TAG_PATTERN.match(text)
     if match:
-        emotion = match.group(1)
+        emotion = match.group(1).lower()
         cleaned_text = text[match.end():]
-        return cleaned_text, emotion
+        if emotion in VALID_EMOTIONS:
+            return cleaned_text, emotion
+        else:
+            return cleaned_text, "neutral"
     return text, default_emotion
