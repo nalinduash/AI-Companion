@@ -1,6 +1,6 @@
 ## Demo
 
-https://github.com/user-attachments/assets/f9674125-8f00-4fd7-928f-ceec68499adc
+[![Watch the Demo Video](https://youtube.com)](https://www.youtube.com/watch?v=6-9_RBeHZwA)
 
 ## Notice: This is working for Linux/Windows and MacOS. This support both CUDA cards(RTX family) and Non-CUDA cards(via vulkan).
 
